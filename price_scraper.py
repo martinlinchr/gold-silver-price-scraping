@@ -1,16 +1,25 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+from datetime import datetime
 
 def scrape_price(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
-    price_element = soup.select_one('small:-soup-contains("PRICE")')
+    # Look for the price in the <small> tag
+    price_element = soup.select_one('small')
     
     if price_element:
-        price = price_element.text.strip()
-        price = ''.join(filter(lambda x: x.isdigit() or x == '.', price))
+        # Extract the price text
+        price_text = price_element.text.strip()
+        # Remove the euro symbol and any whitespace
+        price = price_text.replace('€', '').strip()
+        # Convert to float for consistency
+        try:
+            price = float(price.replace('.', '').replace(',', '.'))
+        except ValueError:
+            price = "Price conversion error"
     else:
         price = "Price not found"
     
@@ -28,9 +37,6 @@ def save_data(df):
     df.to_csv('metal_price_data.csv', index=False)
 
 if __name__ == "__main__":
-    # This block will only run if the script is executed directly (not imported)
-    from datetime import datetime
-    
     gold_price = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
     silver_price = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
     current_time = datetime.now()
