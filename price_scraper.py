@@ -3,19 +3,15 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 
-def scrape_price(url):
+def scrape_data(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
-    # Look for the price in the <small> tag
+    # Scrape the price
     price_element = soup.select_one('small')
-    
     if price_element:
-        # Extract the price text
         price_text = price_element.text.strip()
-        # Remove the euro symbol and any whitespace
         price = price_text.replace('€', '').strip()
-        # Convert to float for consistency
         try:
             price = float(price.replace('.', '').replace(',', '.'))
         except ValueError:
@@ -23,7 +19,22 @@ def scrape_price(url):
     else:
         price = "Price not found"
     
-    return price
+    # Scrape the gold-silver ratio
+    ratio_label = soup.find('div', string='Gold-silver ratio')
+    if ratio_label:
+        ratio_element = ratio_label.find_next_sibling('div', class_='text-right')
+        if ratio_element:
+            ratio = ratio_element.text.strip()
+            try:
+                ratio = float(ratio)
+            except ValueError:
+                ratio = "Ratio conversion error"
+        else:
+            ratio = "Ratio not found"
+    else:
+        ratio = "Ratio not found"
+    
+    return price, ratio
 
 def load_data():
     try:
@@ -31,24 +42,21 @@ def load_data():
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         return df
     except FileNotFoundError:
-        return pd.DataFrame(columns=['Timestamp', 'Gold Price', 'Silver Price'])
+        return pd.DataFrame(columns=['Timestamp', 'Gold Price', 'Silver Price', 'Gold-Silver Ratio'])
 
 def save_data(df):
     df.to_csv('metal_price_data.csv', index=False)
 
 if __name__ == "__main__":
-    gold_price = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
-    silver_price = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
+    gold_price, ratio = scrape_data('https://www.thesilvermountain.nl/en/gold-price')
+    silver_price, _ = scrape_data('https://www.thesilvermountain.nl/en/silver-price')
     current_time = datetime.now()
 
     df = load_data()
     new_data = pd.DataFrame({
         'Timestamp': [current_time],
         'Gold Price': [gold_price],
-        'Silver Price': [silver_price]
+        'Silver Price': [silver_price],
+        'Gold-Silver Ratio': [ratio]
     })
-    df = pd.concat([df, new_data], ignore_index=True)
-    save_data(df)
-
-    print(f"Scraping completed. Gold price: €{gold_price}, Silver price: €{silver_price}")
-    print("Data appended to metal_price_data.csv")
+    df = pd.concat([df, new_
