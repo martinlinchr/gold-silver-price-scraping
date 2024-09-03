@@ -48,7 +48,8 @@ else:
 # Add some instructions
 st.sidebar.header("Instructions")
 st.sidebar.info(
-    "This app scrapes the current gold and silver prices, and the gold-silver ratio from thesilvermountain.nl. "
-    "Click the 'Scrape Current Data' button to update the data. "
-    "The app will display the price and ratio history and charts over time."
+    "This app displays the current gold and silver prices, and the gold-silver ratio from thesilvermountain.nl. "
+    "The data is updated daily at 7:00 AM UTC via GitHub Actions. "
+    "Click the 'Scrape Current Data' button to manually update the data. "
+    "The app displays the price and ratio history and charts over time."
 )
