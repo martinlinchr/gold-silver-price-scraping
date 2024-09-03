@@ -2,14 +2,15 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
-from price_scraper import scrape_data, load_data, save_data
+from price_scraper import scrape_price, scrape_ratio, load_data, save_data
 
 st.title('Gold and Silver Price Tracker')
 
 # Button to scrape the current prices and ratio
 if st.button('Scrape Current Data'):
-    gold_price, ratio = scrape_data('https://www.thesilvermountain.nl/en/gold-price')
-    silver_price, _ = scrape_data('https://www.thesilvermountain.nl/en/silver-price')
+    gold_price = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
+    silver_price = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
+    ratio = scrape_ratio('https://www.thesilvermountain.nl/en/gold-price')
     current_time = datetime.now()
     
     df = load_data()
