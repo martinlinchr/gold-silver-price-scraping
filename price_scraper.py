@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 
-def scrape_data(url):
+def scrape_price(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
@@ -18,6 +18,12 @@ def scrape_data(url):
             price = "Price conversion error"
     else:
         price = "Price not found"
+    
+    return price
+
+def scrape_ratio(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
     
     # Scrape the gold-silver ratio
     ratio_label = soup.find('div', string='Gold-silver ratio')
@@ -34,7 +40,7 @@ def scrape_data(url):
     else:
         ratio = "Ratio not found"
     
-    return price, ratio
+    return ratio
 
 def load_data():
     try:
@@ -48,8 +54,9 @@ def save_data(df):
     df.to_csv('metal_price_data.csv', index=False)
 
 if __name__ == "__main__":
-    gold_price, ratio = scrape_data('https://www.thesilvermountain.nl/en/gold-price')
-    silver_price, _ = scrape_data('https://www.thesilvermountain.nl/en/silver-price')
+    gold_price = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
+    silver_price = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
+    ratio = scrape_ratio('https://www.thesilvermountain.nl/en/gold-price')
     current_time = datetime.now()
 
     df = load_data()
@@ -59,4 +66,8 @@ if __name__ == "__main__":
         'Silver Price': [silver_price],
         'Gold-Silver Ratio': [ratio]
     })
-    df = pd.concat([df, new_
+    df = pd.concat([df, new_data], ignore_index=True)
+    save_data(df)
+
+    print(f"Scraping completed. Gold price: €{gold_price}, Silver price: €{silver_price}, Gold-Silver Ratio: {ratio}")
+    print("Data appended to metal_price_data.csv")
