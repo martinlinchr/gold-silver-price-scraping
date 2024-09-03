@@ -1,4 +1,4 @@
-name: Run Gold Price Scraper
+name: Run Metal Price Scraper
 
 on:
   schedule:
@@ -19,11 +19,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run scraper
-      run: python gold_price_scraper.py
+      run: python price_scraper.py
     - name: Commit and push if changes
       run: |
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
-        git add gold_price_data.csv
-        git commit -m "Update gold price data" || exit 0
+        git add metal_price_data.csv
+        git commit -m "Update metal price data" || exit 0
         git push
