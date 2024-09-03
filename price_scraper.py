@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
+from io import StringIO
 
 def scrape_price(url):
     response = requests.get(url)
@@ -43,11 +44,13 @@ def scrape_ratio(url):
     return ratio
 
 def load_data():
-    try:
-        df = pd.read_csv('metal_price_data.csv')
+    url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/metal_price_data.csv"
+    response = requests.get(url)
+    if response.status_code == 200:
+        df = pd.read_csv(StringIO(response.text))
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         return df
-    except FileNotFoundError:
+    else:
         return pd.DataFrame(columns=['Timestamp', 'Gold Price', 'Silver Price', 'Gold-Silver Ratio'])
 
 def save_data(df):
