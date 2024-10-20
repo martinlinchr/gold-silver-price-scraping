@@ -8,7 +8,6 @@ def scrape_price(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
-    # Scrape the price
     price_element = soup.select_one('small')
     if price_element:
         price_text = price_element.text.strip()
@@ -26,7 +25,6 @@ def scrape_ratio(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     
-    # Scrape the gold-silver ratio
     ratio_label = soup.find('div', string='Gold-silver ratio')
     if ratio_label:
         ratio_element = ratio_label.find_next_sibling('div', class_='text-right')
@@ -44,13 +42,11 @@ def scrape_ratio(url):
     return ratio
 
 def load_data():
-    url = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO_NAME/main/metal_price_data.csv"
-    response = requests.get(url)
-    if response.status_code == 200:
-        df = pd.read_csv(StringIO(response.text))
+    try:
+        df = pd.read_csv('metal_price_data.csv')
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
         return df
-    else:
+    except FileNotFoundError:
         return pd.DataFrame(columns=['Timestamp', 'Gold Price', 'Silver Price', 'Gold-Silver Ratio'])
 
 def save_data(df):
