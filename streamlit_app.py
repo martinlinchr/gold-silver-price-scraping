@@ -78,6 +78,10 @@ if st.button('Fetch Current Prices'):
             st.metric("Silver Price (1g)", f"€{latest_data['Silver Price (1g)']:.2f}")
         with col3:
             st.metric("Gold-Silver Ratio", f"{latest_data['Gold-Silver Ratio']:.2f}")
+
+         # Display raw data
+        st.subheader('Raw Data')
+        st.dataframe(df)
         
         st.text(f"Last updated: {latest_data['Timestamp']}")
         
