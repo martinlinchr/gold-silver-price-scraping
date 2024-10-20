@@ -35,17 +35,24 @@ def scrape_ratio(url):
     return None
 
 def fetch_prices():
-    gold_price = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
-    silver_price = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
+    gold_price_1000g = scrape_price('https://www.thesilvermountain.nl/en/gold-price')
+    silver_price_1000g = scrape_price('https://www.thesilvermountain.nl/en/silver-price')
     ratio = scrape_ratio('https://www.thesilvermountain.nl/en/gold-price')
     current_time = datetime.now()
     
-    return pd.DataFrame({
-        'Timestamp': [current_time],
-        'Gold Price': [gold_price],
-        'Silver Price': [silver_price],
-        'Gold-Silver Ratio': [ratio]
-    })
+    if gold_price_1000g is not None and silver_price_1000g is not None:
+        return pd.DataFrame({
+            'Timestamp': [current_time],
+            'Gold Price (1000g)': [gold_price_1000g],
+            'Gold Price (100g)': [gold_price_1000g / 10],
+            'Gold Price (1g)': [gold_price_1000g / 1000],
+            'Silver Price (1000g)': [silver_price_1000g],
+            'Silver Price (100g)': [silver_price_1000g / 10],
+            'Silver Price (1g)': [silver_price_1000g / 1000],
+            'Gold-Silver Ratio': [ratio]
+        })
+    else:
+        return pd.DataFrame()
 
 st.title('Gold and Silver Price Tracker')
 
@@ -54,7 +61,7 @@ if st.button('Fetch Current Prices'):
     with st.spinner('Fetching latest prices...'):
         df = fetch_prices()
     
-    if not df.empty and df['Gold Price'].notna().all() and df['Silver Price'].notna().all():
+    if not df.empty:
         st.success('Prices fetched successfully!')
         
         # Display the most recent prices
@@ -62,13 +69,13 @@ if st.button('Fetch Current Prices'):
         st.subheader('Latest Prices')
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Gold Price (1000g)", f"€{latest_data['Gold Price']:.2f}")
-            st.metric("Gold Price (100g)", f"€{latest_data['Gold Price']/10:.2f}")
-            st.metric("Gold Price (1g)", f"€{latest_data['Gold Price']/1000:.2f}")
+            st.metric("Gold Price (1000g)", f"€{latest_data['Gold Price (1000g)']:.2f}")
+            st.metric("Gold Price (100g)", f"€{latest_data['Gold Price (100g)']:.2f}")
+            st.metric("Gold Price (1g)", f"€{latest_data['Gold Price (1g)']:.2f}")
         with col2:
-            st.metric("Silver Price (1000g)", f"€{latest_data['Silver Price']:.2f}")
-            st.metric("Silver Price (100g)", f"€{latest_data['Silver Price']/10:.2f}")
-            st.metric("Silver Price (1g)", f"€{latest_data['Silver Price']/1000:.2f}")
+            st.metric("Silver Price (1000g)", f"€{latest_data['Silver Price (1000g)']:.2f}")
+            st.metric("Silver Price (100g)", f"€{latest_data['Silver Price (100g)']:.2f}")
+            st.metric("Silver Price (1g)", f"€{latest_data['Silver Price (1g)']:.2f}")
         with col3:
             st.metric("Gold-Silver Ratio", f"{latest_data['Gold-Silver Ratio']:.2f}")
         
@@ -76,9 +83,11 @@ if st.button('Fetch Current Prices'):
         
         # Create line charts
         st.subheader('Price and Ratio Charts')
-        fig_gold = px.line(df, x='Timestamp', y='Gold Price', title='Gold Price (1000g)')
+        fig_gold = px.line(df, x='Timestamp', y=['Gold Price (1000g)', 'Gold Price (100g)', 'Gold Price (1g)'], 
+                           title='Gold Prices')
         st.plotly_chart(fig_gold)
-        fig_silver = px.line(df, x='Timestamp', y='Silver Price', title='Silver Price (1000g)')
+        fig_silver = px.line(df, x='Timestamp', y=['Silver Price (1000g)', 'Silver Price (100g)', 'Silver Price (1g)'], 
+                             title='Silver Prices')
         st.plotly_chart(fig_silver)
         fig_ratio = px.line(df, x='Timestamp', y='Gold-Silver Ratio', title='Gold-Silver Ratio')
         st.plotly_chart(fig_ratio)
@@ -94,5 +103,5 @@ st.sidebar.header("Instructions")
 st.sidebar.info(
     "This app displays the current gold and silver prices, and the gold-silver ratio from thesilvermountain.nl. "
     "Click the 'Fetch Current Prices' button to get the latest data. "
-    "The app will display the latest prices for different weights, charts, and raw data."
+    "The app will display the latest prices for different weights (1000g, 100g, 1g), charts, and raw data."
 )
